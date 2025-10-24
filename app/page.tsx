@@ -1,6 +1,46 @@
-import Image from "next/image";
+"use client";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { CustomEase, SplitText } from "gsap/all";
+import Lenis from "lenis";
+
+gsap.registerPlugin(CustomEase, SplitText);
+
+// Create custom easing function
+CustomEase.create("hop", ".87, 0, .13, 1");
 
 export default function Home() {
+  useGSAP(() => {
+    // Your GSAP animations will go here
+    const lenis = new Lenis();
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    const textContainers = document.querySelectorAll(".menu-col");
+    let splitTextByContainer = [];
+
+    textContainers.forEach((container) => {
+      const textElements = container.querySelectorAll("a, p");
+      let containerSplits = [];
+
+      textElements.forEach((element) => {
+        const split = SplitText.create(element, {
+          type: "lines",
+          mask: "lines",
+          linesClass: "line",
+        });
+        containerSplits.push(split);
+
+        gsap.set(split.lines, { y: "-110%" });
+      });
+      splitTextByContainer.push(containerSplits);
+    });
+
+  }, {});
+
   return (
     <>
       <nav>
@@ -18,7 +58,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
 
         <div className="menu-overlay">
           <div className="menu-overlay-content">
@@ -72,8 +111,6 @@ export default function Home() {
           </div>
         </div>
       </nav>
-
-
 
       <div className="container">
         <section className="hero">
