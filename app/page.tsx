@@ -19,6 +19,18 @@ export default function Home() {
     }
     requestAnimationFrame(raf);
 
+    // DOM element selectors
+    const container = document.querySelector(".container");
+    const menuToggleBtn = document.querySelector(".menu-toggle-btn");
+    const menuOverlay = document.querySelector(".menu-overlay");
+    const menuOverlayContainer = document.querySelector(
+      ".menu-overlay-content"
+    );
+    const menuMediaWrapper = document.querySelector(".menu-media-wrapper");
+    const copyContainers = document.querySelectorAll(".menu-col");
+    const menuToggleLabel = document.querySelector(".menu-toggle-label p");
+    const hamburgerIcon = document.querySelector(".menu-hamburger-icon");
+
     const textContainers = document.querySelectorAll(".menu-col");
     let splitTextByContainer = [];
 
@@ -39,6 +51,149 @@ export default function Home() {
       splitTextByContainer.push(containerSplits);
     });
 
+    let isMenuOpen = false;
+    let isAnimating = false;
+
+    menuToggleBtn?.addEventListener("click", () => {
+      if (isAnimating) return;
+
+      if (!isMenuOpen) {
+        isAnimating = true;
+
+        lenis.stop();
+
+        const tl = gsap.timeline();
+
+        tl.to(menuToggleLabel, {
+          y: "-110%",
+          duration: 1,
+          ease: "hop",
+        })
+          .to(
+            container,
+            {
+              y: "100svh",
+              duration: 1,
+              ease: "hop",
+            },
+            "<"
+          )
+          .to(
+            menuOverlay,
+            {
+              clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+              duration: 1,
+              ease: "hop",
+            },
+            "<"
+          )
+          .to(
+            menuOverlayContainer,
+            {
+              yPercent: 0,
+              duration: 1,
+              ease: "hop",
+            },
+            "<"
+          )
+          .to(
+            menuMediaWrapper,
+            {
+              opacity: 1,
+              duration: 0.75,
+              ease: "power2.inOut",
+              delay: 0.5,
+            },
+            "<"
+          );
+
+        splitTextByContainer.forEach((containerSplis) => {
+          const copyLines = containerSplis.flatMap((split) => split.lines);
+
+          tl.to(
+            copyLines,
+            {
+              y: "0%",
+              duration: 2,
+              ease: "hop",
+              stagger: -0.075,
+            },
+            -0.15
+          );
+        });
+
+        hamburgerIcon?.classList.add("active");
+
+        tl.call(() => {
+          isAnimating = false;
+        });
+
+        isMenuOpen = true;
+      } else {
+        isAnimating = true;
+
+        hamburgerIcon?.classList.remove("active");
+        const tl = gsap.timeline();
+
+        tl.to(container, {
+          y: "0svh",
+          duration: 1,
+          ease: "hop",
+        })
+          .to(
+            menuOverlay,
+            {
+              clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+              duration: 1,
+              ease: "hop",
+            },
+            "<"
+          )
+          .to(
+            menuOverlayContainer,
+            {
+              yPercent: -50,
+              duration: 1,
+              hop: "ease",
+            },
+            "<"
+          )
+          .to(
+            menuToggleLabel,
+            {
+              y: "0%",
+              duration: 1,
+              ease: "hop",
+            },
+            "<"
+          )
+          .to(
+            copyContainers,
+            {
+              opacity: 0.25,
+              duration: 1,
+              ease: "hop",
+            },
+            "<"
+          );
+
+        tl.call(() => {
+          splitTextByContainer.forEach((containerSplits) => {
+            const copyLines = containerSplits.flatMap((split) => split.lines);
+            gsap.set(copyLines, {
+              y: "-110%",
+            });
+            gsap.set(copyContainers, { opacity: 1 });
+            gsap.set(menuMediaWrapper, { opacity: 0 });
+
+            isAnimating = false;
+            lenis.start();
+          });
+
+          isMenuOpen = false;
+        });
+      }
+    });
   }, {});
 
   return (
